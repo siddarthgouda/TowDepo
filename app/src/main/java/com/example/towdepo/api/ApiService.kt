@@ -6,11 +6,13 @@ import com.example.towdepo.data.ApiProduct
 import com.example.towdepo.data.AuthResponse
 import com.example.towdepo.data.LoginRequest
 import com.example.towdepo.data.LogoutRequest
+import com.example.towdepo.data.ProductApiResponse
 
-import com.example.towdepo.data.ProductResponse
+
 import com.example.towdepo.data.RefreshTokenRequest
 import com.example.towdepo.data.RegisterRequest
 import com.example.towdepo.data.User
+import okhttp3.Response
 import retrofit2.http.*
 
 interface ApiService {
@@ -29,12 +31,11 @@ interface ApiService {
     @GET("users/me")
     suspend fun getCurrentUser(@Header("Authorization") token: String): User
 
-
 }
-
+// ProductApiService.kt
 interface ProductApiService {
     @GET("/v1/product")
-    suspend fun getAllProducts(): ProductResponse
+    suspend fun getAllProducts(): ProductApiResponse
 
     @GET("/v1/product/{id}")
     suspend fun getProductById(@Path("id") id: String): ApiProduct

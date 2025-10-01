@@ -1,32 +1,28 @@
 package com.example.towdepo.repository
 
-import com.example.towdepo.data.ApiProduct
 import com.example.towdepo.api.ProductApiService
 
-class ProductRepository(private val productApi: ProductApiService) {
+import com.example.towdepo.data.ApiProduct
+import com.example.towdepo.di.AppContainer
+
+class ProductRepository(
+    private val apiService: ProductApiService = AppContainer.productApiService
+) {
 
     suspend fun getAllProducts(): List<ApiProduct> {
         return try {
-            println("🔄 [DEBUG] Calling getAllProducts()")
-            val response = productApi.getAllProducts()
-            println("✅ [DEBUG] Success! Got ${response.results.size} products")
-            println("✅ [DEBUG] Total results: ${response.totalResults}, Page: ${response.page}")
-            response.results
+            val response = apiService.getAllProducts()
+            response.results // Extract products from the results field
         } catch (e: Exception) {
-            println("❌ [DEBUG] API Call Failed: ${e.message}")
-            println("❌ [DEBUG] Exception type: ${e.javaClass.simpleName}")
-            e.printStackTrace()
-            throw Exception("Failed to fetch products: ${e.message}")
+            emptyList()
         }
     }
 
-    suspend fun getProductById(id: String): ApiProduct {
+    suspend fun getProductById(id: String): ApiProduct? {
         return try {
-            println("🔄 [DEBUG] Fetching product with ID: $id")
-            productApi.getProductById(id)
+            apiService.getProductById(id)
         } catch (e: Exception) {
-            println("❌ [DEBUG] Failed to fetch product: ${e.message}")
-            throw Exception("Failed to fetch product: ${e.message}")
+            null
         }
     }
 }

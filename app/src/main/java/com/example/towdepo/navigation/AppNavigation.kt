@@ -1,14 +1,18 @@
 package com.example.towdepo.navigation
 
+import com.example.towdepo.ui.theme.screnns.ProductsScreen
+
+
+
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.towdepo.ui.theme.screnns.AuthScreen
-import com.example.towdepo.ui.theme.screnns.HomeScreen
+import com.example.towdepo.ui.theme.screnns.ProductDetailScreen
 import com.example.towdepo.ui.theme.screnns.SplashScreen
-import com.example.towdepo.viewmodels.AuthViewModel
 
+import com.example.towdepo.viewmodels.AuthViewModel
 
 @Composable
 fun AppNavigation(authViewModel: AuthViewModel) {
@@ -18,28 +22,40 @@ fun AppNavigation(authViewModel: AuthViewModel) {
         composable("splash") {
             SplashScreen(
                 authViewModel = authViewModel,
-                onLoggedIn = { navController.navigate("home") { popUpTo("splash") { inclusive = true } } },
-                onLoggedOut = { navController.navigate("auth") { popUpTo("splash") { inclusive = true } } }
+                onLoggedIn = {
+                    navController.navigate("products") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                },
+                onLoggedOut = {
+                    navController.navigate("auth") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
             )
         }
         composable("auth") {
             AuthScreen(
                 authViewModel = authViewModel,
-                onLoginSuccess = { navController.navigate("home") { popUpTo("auth") { inclusive = true } } }
+                onLoginSuccess = {
+                    navController.navigate("products") {
+                        popUpTo("auth") { inclusive = true }
+                    }
+                }
             )
         }
-        composable("home") {
-            HomeScreen(
-                authViewModel = authViewModel,
-                onLogout = {
-                    navController.navigate("auth") {
-                        popUpTo("home") { inclusive = true }
-                    }
-                },
-                onNavigateToProfile = {
-                    // Navigate to profile screen
-                    navController.navigate("profile")
+        composable("products") {
+            ProductsScreen( // Using ProductsScreen here
+                onProductClick = { productId ->
+                    navController.navigate("product/$productId")
                 }
+            )
+        }
+        composable("product/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId") ?: ""
+            ProductDetailScreen(
+                productId = productId,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

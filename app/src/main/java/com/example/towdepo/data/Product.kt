@@ -1,82 +1,81 @@
+// Product.kt
 package com.example.towdepo.data
+// Product.kt
 
-// Updated data classes to match the actual API response
-data class ProductResponse(
+
+data class ProductApiResponse(
     val results: List<ApiProduct>,
     val page: Int,
-    val limit: String,
+    val limit: String?,
     val totalPages: Int?,
     val totalResults: Int
 )
 
 data class ApiProduct(
-    val id: String,
-    val inStock: Boolean,
-    val category: ApiCategory,
+    val id: String, // Changed from _id to match your backend response
     val title: String,
     val mrp: Double,
-    val brand: String?,
-    val discount: String,
-    val images: List<ApiImage>,
-    val variant: List<ApiVariant>,
+    val category: Category,
+    val inStock: Boolean,
     val SKU: String,
-    val productInfo: List<Any>,
-    val productSpec: List<Any>,
-    val created_on: String
+    val createdAt: String? = null,
+    val created_on: String,
+    val description: String? = null,
+    val discount: String? = null,
+    val brand: Brand? = null,
+    val images: List<Image> = emptyList(),
+    val variant: List<Variant> = emptyList(), // Added variant field
+    val productInfo: List<ProductInfo> = emptyList(), // Added productInfo field
+    val productSpec: List<ProductSpec> = emptyList() // Added productSpec field
 ) {
-    // Helper function to get full image URL (for backwards compatibility with your UI code)
-    fun getFirstImageUrl(): String? {
-        return images.firstOrNull()?.src?.let { imageSrc ->
-            "YOUR_BASE_URL/$imageSrc" // Replace with your actual image base URL
-        }
+    fun getAllImageUrls(): List<String> {
+        return images.mapNotNull { it.src } // Changed from url to src
     }
 
-    // Get the first variant's price (most common use case)
-    fun getCurrentPrice(): Double {
-        return variant.firstOrNull()?.price ?: mrp
-    }
-
-    // Get total stock quantity from all variants
     fun getStockQuantity(): Int {
-        return variant.sumOf { it.quantity }
+        return if (inStock) 1 else 0
     }
 
-    // Get first variant's images
-    fun getVariantImages(): List<String> {
-        return variant.firstOrNull()?.images ?: emptyList()
-    }
+    val discountedPrice: Double
+        get() = mrp - (mrp * (discount?.toDoubleOrNull() ?: 0.0) / 100)
 }
 
-data class ApiCategory(
-    val id: String,
+data class Category(
+    val id: String, // Changed from _id to id
     val name: String
 )
 
-data class ApiImage(
-    val id: String,
-    val src: String
-) {
-    // Helper property to generate full URL
-    val url: String
-        get() = "YOUR_BASE_URL/$src" // Replace with your actual image base URL
-}
+data class Brand(
+    val id: String, // Changed from _id to id
+    val name: String
+)
 
-data class ApiVariant(
+data class Image(
+    val id: String, // Changed from _id to id
+    val src: String // Changed from url to src (matches your backend)
+)
+
+data class Variant(
     val id: String,
     val sku: String,
     val quantity: Int,
     val price: Double,
     val images: List<String>,
-    val attributes: List<ApiAttribute>
-) {
-    // Helper to get attribute value by name
-    fun getAttribute(name: String): String? {
-        return attributes.find { it.name == name }?.value
-    }
-}
+    val attributes: List<Attribute>
+)
 
-data class ApiAttribute(
+data class Attribute(
     val id: String,
     val name: String,
     val value: String
+)
+
+data class ProductInfo(
+    val id: String,
+    // Add fields based on your ProductInfo model
+)
+
+data class ProductSpec(
+    val id: String,
+    // Add fields based on your ProductSpec model
 )

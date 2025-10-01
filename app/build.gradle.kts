@@ -40,7 +40,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -49,37 +48,28 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation("androidx.compose.material3:material3")
-    
+
+    // ViewModel & Navigation
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.navigation:navigation-compose:2.7.0")
+
+    // Retrofit for API calls
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 
+    // Compose Extensions
     implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
+    implementation("androidx.compose.material:material-icons-core:1.6.0")
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
 
-    implementation("androidx.compose.material3:material3:1.1.2")
-
-    implementation("androidx.compose.material:material-icons-core:1.6.0") // or your compose version
-    implementation("androidx.compose.material:material-icons-extended:1.6.0") // for extended icons
-
-
-        // ... your existing dependencies
-
-        // Coil for image loading
-        implementation("io.coil-kt:coil-compose:2.4.0")
-
-        // If you want to load base64 images later
-        implementation("io.coil-kt:coil-base:2.4.0")
-    
-
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.4.0")
 
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.espresso.core)
-
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

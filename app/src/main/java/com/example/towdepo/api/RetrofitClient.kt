@@ -42,5 +42,3 @@ object RetrofitInstance {
         retrofit.create(ProductApiService::class.java)
     }
 }
-
-
