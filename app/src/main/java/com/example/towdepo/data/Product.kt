@@ -22,7 +22,7 @@ data class ApiProduct(
     val created_on: String,
     val description: String? = null,
     val discount: String? = null,
-    val brand: Brand? = null,
+    val brand: Brand,
     val images: List<Image> = emptyList(),
     val variant: List<Variant> = emptyList(), // Added variant field
     val productInfo: List<ProductInfo> = emptyList(), // Added productInfo field

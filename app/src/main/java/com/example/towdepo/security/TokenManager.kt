@@ -7,6 +7,7 @@ import com.example.towdepo.data.AuthResponse
 import com.example.towdepo.data.User
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.core.content.edit
 
 class TokenManager(context: Context) {
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
@@ -56,10 +57,12 @@ class TokenManager(context: Context) {
             email = sharedPreferences.getString(KEY_USER_EMAIL, "") ?: "",
             isEmailVerified = sharedPreferences.getBoolean(KEY_IS_EMAIL_VERIFIED, false)
         )
+
+
     }
 
     fun clearAuthData() {
-        sharedPreferences.edit().clear().apply()
+        sharedPreferences.edit { clear() }
     }
 
     fun isLoggedIn(): Boolean {

@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.espresso.core)
+    implementation(libs.mediation.test.suite)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

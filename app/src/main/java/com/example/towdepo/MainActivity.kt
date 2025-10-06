@@ -16,7 +16,7 @@ import com.example.towdepo.viewmodels.AuthViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppContainer.initialize(this)
+
         setContent {
             MaterialTheme {
                 val tokenManager = rememberTokenManager()
@@ -37,6 +37,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun rememberTokenManager(): TokenManager {
     val context = LocalContext.current
-    return remember { (context.applicationContext as MainApplication).tokenManager }
+    return remember {
+        (context.applicationContext as MainApplication).tokenManager
+    }
 }
-

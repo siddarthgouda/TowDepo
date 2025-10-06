@@ -8,36 +8,53 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
+import androidx.compose.material3.ButtonDefaults.outlinedButtonBorder
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.towdepo.di.AppContainer
 import com.example.towdepo.repository.ProductRepository
+import com.example.towdepo.viewmodels.AuthViewModel
+import com.example.towdepo.viewmodels.CartViewModel
 import com.example.towdepo.viewmodels.ProductViewModel
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
     productId: String,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onLoginRequired: () -> Unit,
+    onNavigateToCart: () -> Unit,
+    authViewModel: AuthViewModel // CHANGED: Receive AuthViewModel directly instead of factory
 ) {
+    // Get login state from the shared AuthViewModel
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+
+    // DEBUG: Add this to verify login state is updating
+    LaunchedEffect(isLoggedIn) {
+        println("🔐 DEBUG ProductDetailScreen: Login state = $isLoggedIn")
+    }
+
     val productViewModel: ProductViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val repository = ProductRepository(AppContainer.productApiService)
                 return ProductViewModel(repository) as T
             }
@@ -75,7 +92,7 @@ fun ProductDetailScreen(
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -85,6 +102,28 @@ fun ProductDetailScreen(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 actions = {
+                    // Cart Icon - FIXED: Use shared AuthViewModel state
+                    IconButton(
+                        onClick = {
+                            if (isLoggedIn) {
+                                onNavigateToCart()
+                            } else {
+                                onLoginRequired()
+                            }
+                        },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = "Cart",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    // Share Icon
                     IconButton(
                         onClick = { /* Share product */ },
                         modifier = Modifier
@@ -103,7 +142,11 @@ fun ProductDetailScreen(
         },
         bottomBar = {
             if (currentProduct != null) {
-                ProductActionBar(product = currentProduct)
+                ProductActionBar(
+                    product = currentProduct,
+                    onLoginRequired = onLoginRequired,
+                    isLoggedIn = isLoggedIn // Pass the shared login state
+                )
             }
         }
     ) { paddingValues ->
@@ -235,7 +278,7 @@ fun ProductDetailContent(product: com.example.towdepo.data.ApiProduct) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        // Product Images Gallery - UPDATED PART
+        // Product Images Gallery
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -280,7 +323,7 @@ fun ProductDetailContent(product: com.example.towdepo.data.ApiProduct) {
             }
         }
 
-        // Product Info Card - REST REMAINS SAME
+        // Product Info Card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -509,42 +552,87 @@ fun ProductImageLoader(
 }
 
 @Composable
-fun ProductActionBar(product: com.example.towdepo.data.ApiProduct) {
+fun ProductActionBar(
+    product: com.example.towdepo.data.ApiProduct,
+    onLoginRequired: () -> Unit,
+    isLoggedIn: Boolean, // Receive login state from parent
+    cartViewModel: CartViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return CartViewModel(AppContainer.cartRepository) as T
+            }
+        }
+    )
+) {
+    var showAddedMessage by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showAddedMessage) {
+        if (showAddedMessage) {
+            delay(2000)
+            showAddedMessage = false
+        }
+    }
+
     Surface(
         tonalElevation = 8.dp,
         shadowElevation = 8.dp
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Wishlist Button
-            OutlinedButton(
-                onClick = { /* Add to wishlist */ },
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(12.dp),
-                border = ButtonDefaults.outlinedButtonBorder.copy(
-                    width = 1.dp
-                )
-            ) {
-                Text("Wishlist")
+        Column {
+            if (showAddedMessage) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "✅ Added to cart!",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
-            // Add to Cart Button
-            Button(
-                onClick = { /* Add to cart */ },
-                modifier = Modifier.weight(2f),
-                shape = RoundedCornerShape(12.dp),
-                enabled = product.inStock
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = if (product.inStock) "Add to Cart" else "Out of Stock",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                // Wishlist Button
+                OutlinedButton(
+                    onClick = { /* Add to wishlist */ },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    border = outlinedButtonBorder.copy(
+                        width = 1.dp
+                    )
+                ) {
+                    Text("Wishlist")
+                }
+
+                // Add to Cart Button - FIXED: Use passed isLoggedIn state
+                Button(
+                    onClick = {
+                        if (isLoggedIn) {
+                            cartViewModel.addToCart(product)
+                            showAddedMessage = true
+                        } else {
+                            onLoginRequired()
+                        }
+                    },
+                    modifier = Modifier.weight(2f),
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = product.inStock
+                ) {
+                    Text(
+                        text = if (product.inStock) "Add to Cart" else "Out of Stock",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
