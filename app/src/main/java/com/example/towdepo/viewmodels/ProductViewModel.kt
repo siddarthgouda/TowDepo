@@ -43,7 +43,5 @@ class ProductViewModel(
         }
     }
 
-    fun clearError() {
-        _error.value = null
+
     }
-}

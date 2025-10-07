@@ -1,7 +1,4 @@
-// Product.kt
 package com.example.towdepo.data
-// Product.kt
-
 
 data class ProductApiResponse(
     val results: List<ApiProduct>,
@@ -12,7 +9,7 @@ data class ProductApiResponse(
 )
 
 data class ApiProduct(
-    val id: String, // Changed from _id to match your backend response
+    val id: String,
     val title: String,
     val mrp: Double,
     val category: Category,
@@ -24,12 +21,12 @@ data class ApiProduct(
     val discount: String? = null,
     val brand: Brand,
     val images: List<Image> = emptyList(),
-    val variant: List<Variant> = emptyList(), // Added variant field
-    val productInfo: List<ProductInfo> = emptyList(), // Added productInfo field
-    val productSpec: List<ProductSpec> = emptyList() // Added productSpec field
+    val variant: List<Variant> = emptyList(),
+    val productInfo: List<ProductInfo> = emptyList(),
+    val productSpec: List<ProductSpec> = emptyList()
 ) {
     fun getAllImageUrls(): List<String> {
-        return images.mapNotNull { it.src } // Changed from url to src
+        return images.mapNotNull { it.src }
     }
 
     fun getStockQuantity(): Int {
@@ -41,18 +38,18 @@ data class ApiProduct(
 }
 
 data class Category(
-    val id: String, // Changed from _id to id
+    val id: String,
     val name: String
 )
 
 data class Brand(
-    val id: String, // Changed from _id to id
+    val id: String,
     val name: String
 )
 
 data class Image(
-    val id: String, // Changed from _id to id
-    val src: String // Changed from url to src (matches your backend)
+    val id: String,
+    val src: String
 )
 
 data class Variant(
@@ -72,10 +69,10 @@ data class Attribute(
 
 data class ProductInfo(
     val id: String,
-    // Add fields based on your ProductInfo model
+
 )
 
 data class ProductSpec(
     val id: String,
-    // Add fields based on your ProductSpec model
+
 )
