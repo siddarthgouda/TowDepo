@@ -21,7 +21,7 @@ interface CartApiService {
     suspend fun getCartItems(
         @Header("Authorization") token: String,
         @Query("page") page: Int? = null,
-        @Query("limit") limit: Int? = null
+        @Query("limit") limit: String? = null
     ): Response<CartApiResponse>
 
     @POST("/v1/cart")

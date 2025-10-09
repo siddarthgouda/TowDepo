@@ -34,6 +34,7 @@ object RetrofitInstance {
             .build()
     }
 
+
     val apiService: ApiService by lazy {
         retrofit.create(ApiService::class.java)
     }
@@ -45,4 +46,9 @@ object RetrofitInstance {
     val cartApi: CartApiService by lazy {
         retrofit.create(CartApiService::class.java)
     }
+
+    val wishlistApiService: WishlistApiService by lazy {
+        retrofit.create(WishlistApiService::class.java)
+    }
+
 }

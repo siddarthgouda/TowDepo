@@ -37,6 +37,8 @@ class TokenManager(context: Context) {
     fun getAccessToken(): String? = sharedPreferences.getString(KEY_ACCESS_TOKEN, null)
     fun getRefreshToken(): String? = sharedPreferences.getString(KEY_REFRESH_TOKEN, null)
 
+    fun getUserId(): String? = sharedPreferences.getString(KEY_USER_ID, null)
+
     fun isAccessTokenExpired(): Boolean {
         val expiryString = sharedPreferences.getString(KEY_ACCESS_TOKEN_EXPIRY, null)
         return expiryString?.let {

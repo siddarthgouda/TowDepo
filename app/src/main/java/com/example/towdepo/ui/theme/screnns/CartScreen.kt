@@ -29,13 +29,15 @@ import com.example.towdepo.data.CartItem
 import com.example.towdepo.repository.CartRepository
 import com.example.towdepo.security.TokenManager
 import com.example.towdepo.viewmodels.CartViewModel
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(
     navController: NavController,
     tokenManager: TokenManager,
-    apiService: CartApiService
+    apiService: CartApiService,
+    userId: String
 ) {
     println("🛒 DEBUG: CartScreen composable called")
 
@@ -88,9 +90,9 @@ fun CartScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         },
@@ -101,6 +103,7 @@ fun CartScreen(
                     totalItems = cartViewModel.getTotalItems(),
                     onCheckout = {
                         println("🛒 DEBUG: Proceeding to checkout")
+                        navController.navigate("checkout")
                     }
                 )
             }
@@ -126,6 +129,18 @@ fun CartBottomBar(
     totalItems: Int,
     onCheckout: () -> Unit
 ) {
+    var isLoading by remember { mutableStateOf(false) }
+
+    // Move LaunchedEffect to composable scope
+    if (isLoading) {
+        LaunchedEffect(Unit) {
+            // Simulate brief processing for better UX
+            delay(500)
+            onCheckout()
+            isLoading = false
+        }
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -162,9 +177,11 @@ fun CartBottomBar(
                     )
                 }
 
-                // Checkout button
+                // Enhanced Checkout button
                 Button(
-                    onClick = onCheckout,
+                    onClick = {
+                        isLoading = true
+                    },
                     modifier = Modifier
                         .height(52.dp)
                         .width(140.dp),
@@ -172,13 +189,33 @@ fun CartBottomBar(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = !isLoading
                 ) {
-                    Text(
-                        text = "Checkout",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    if (isLoading) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Processing...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = "Checkout",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }
@@ -549,16 +586,6 @@ fun CartItemCard(
     }
 }
 
-// Helper function to get proper brand display name
-private fun getBrandDisplayName(brand: String): String {
-    return when {
-        brand == "default_brand_id" -> "N/A"
-        brand.contains("default") -> "N/A"
-        brand.isNotEmpty() -> brand
-        else -> "N/A"
-    }
-}
-
 @Composable
 fun EmptyCartState() {
     Box(
@@ -610,6 +637,16 @@ fun EmptyCartState() {
                 )
             }
         }
+    }
+}
+
+// Helper function to get proper brand display name
+private fun getBrandDisplayName(brand: String): String {
+    return when {
+        brand == "default_brand_id" -> "N/A"
+        brand.contains("default") -> "N/A"
+        brand.isNotEmpty() -> brand
+        else -> "N/A"
     }
 }
 

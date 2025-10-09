@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
@@ -30,9 +32,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.towdepo.di.AppContainer
 import com.example.towdepo.repository.ProductRepository
+import com.example.towdepo.utils.WishlistViewModelFactory
 import com.example.towdepo.viewmodels.AuthViewModel
 import com.example.towdepo.viewmodels.CartViewModel
 import com.example.towdepo.viewmodels.ProductViewModel
+import com.example.towdepo.viewmodels.WishlistViewModel
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,14 +46,16 @@ fun ProductDetailScreen(
     onBackClick: () -> Unit,
     onLoginRequired: () -> Unit,
     onNavigateToCart: () -> Unit,
-    authViewModel: AuthViewModel // CHANGED: Receive AuthViewModel directly instead of factory
+    onWishlistClick: () -> Unit,
+    authViewModel: AuthViewModel
 ) {
     // Get login state from the shared AuthViewModel
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
 
-    // DEBUG: Add this to verify login state is updating
-    LaunchedEffect(isLoggedIn) {
-        println("🔐 DEBUG ProductDetailScreen: Login state = $isLoggedIn")
+    // Debug logging
+    LaunchedEffect(Unit) {
+        println("🔍 DEBUG ProductDetailScreen: Screen launched with productId: $productId")
+        println("🔍 DEBUG ProductDetailScreen: Login state = $isLoggedIn")
     }
 
     val productViewModel: ProductViewModel = viewModel(
@@ -85,7 +91,10 @@ fun ProductDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = onBackClick,
+                        onClick = {
+                            println("🔍 DEBUG: Back button clicked in ProductDetailScreen")
+                            onBackClick()
+                        },
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
@@ -102,7 +111,7 @@ fun ProductDetailScreen(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 actions = {
-                    // Cart Icon - FIXED: Use shared AuthViewModel state
+                    // Cart Icon
                     IconButton(
                         onClick = {
                             if (isLoggedIn) {
@@ -145,7 +154,8 @@ fun ProductDetailScreen(
                 ProductActionBar(
                     product = currentProduct,
                     onLoginRequired = onLoginRequired,
-                    isLoggedIn = isLoggedIn // Pass the shared login state
+                    isLoggedIn = isLoggedIn,
+                    onWishlistClick = onWishlistClick
                 )
             }
         }
@@ -210,6 +220,17 @@ fun ProductDetailScreen(
                             modifier = Modifier.height(48.dp)
                         ) {
                             Text("Try Again", fontSize = 16.sp)
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = onBackClick,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.height(48.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Text("Go Back", fontSize = 16.sp)
                         }
                     }
                 }
@@ -474,7 +495,6 @@ fun ProductDetailContent(product: com.example.towdepo.data.ApiProduct) {
     }
 }
 
-// Helper function to build image URL
 private fun buildImageUrl(imageSrc: String): String {
     return when {
         imageSrc.startsWith("http") -> imageSrc
@@ -483,7 +503,6 @@ private fun buildImageUrl(imageSrc: String): String {
     }
 }
 
-// Enhanced Image Loader with error handling
 @Composable
 fun ProductImageLoader(
     imageUrl: String,
@@ -555,7 +574,9 @@ fun ProductImageLoader(
 fun ProductActionBar(
     product: com.example.towdepo.data.ApiProduct,
     onLoginRequired: () -> Unit,
-    isLoggedIn: Boolean, // Receive login state from parent
+    isLoggedIn: Boolean,
+    onWishlistClick: () -> Unit,
+    wishlistViewModel: WishlistViewModel = viewModel(factory = WishlistViewModelFactory(AppContainer)),
     cartViewModel: CartViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -565,6 +586,13 @@ fun ProductActionBar(
     )
 ) {
     var showAddedMessage by remember { mutableStateOf(false) }
+    var showWishlistMessage by remember { mutableStateOf(false) }
+
+    // Track wishlist state
+    val wishlistItems by wishlistViewModel.wishlistItems.collectAsState()
+    val isInWishlist = remember(wishlistItems, product.id) {
+        wishlistItems.any { it.product.id == product.id }
+    }
 
     LaunchedEffect(showAddedMessage) {
         if (showAddedMessage) {
@@ -573,27 +601,30 @@ fun ProductActionBar(
         }
     }
 
+    LaunchedEffect(showWishlistMessage) {
+        if (showWishlistMessage) {
+            delay(2000)
+            showWishlistMessage = false
+        }
+    }
+
     Surface(
         tonalElevation = 8.dp,
         shadowElevation = 8.dp
     ) {
         Column {
+            // Success Messages
             if (showAddedMessage) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primary)
-                        .padding(8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "✅ Added to cart!",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                SuccessMessage("✅ Added to cart!")
+            }
+            if (showWishlistMessage) {
+                SuccessMessage(
+                    if (isInWishlist) "💖 Added to wishlist!"
+                    else "🗑️ Removed from wishlist!"
+                )
             }
 
+            // Action Buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -601,19 +632,53 @@ fun ProductActionBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Wishlist Button
+                // Wishlist Button - IMPROVED
                 OutlinedButton(
-                    onClick = { /* Add to wishlist */ },
+                    onClick = {
+                        println("🎯 DEBUG: Wishlist button clicked for: ${product.id}")
+                        println("🎯 DEBUG: Is in wishlist: $isInWishlist")
+
+                        if (isLoggedIn) {
+                            if (isInWishlist) {
+                                // Remove from wishlist
+                                val wishlistItem = wishlistItems.find { it.product.id == product.id }
+                                wishlistItem?.let {
+                                    println("🎯 DEBUG: Removing item: ${it.id}")
+                                    wishlistViewModel.removeFromWishlist(it.id?.oid ?: "")
+                                }
+                            } else {
+                                // Add to wishlist
+                                println("🎯 DEBUG: Adding product to wishlist")
+                                wishlistViewModel.addToWishlist(
+                                    title = product.title,
+                                    productId = product.id,
+                                    mrp = product.mrp,
+                                    discount = product.discount ?: "0",
+                                    brand = product.brand?.name ?: "Unknown Brand",
+                                    image = product.images.firstOrNull()?.src ?: ""
+                                )
+                            }
+                            showWishlistMessage = true
+                        } else {
+                            onLoginRequired()
+                        }
+                    },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    border = outlinedButtonBorder.copy(
-                        width = 1.dp
-                    )
+                    border = outlinedButtonBorder.copy(width = 1.dp)
                 ) {
-                    Text("Wishlist")
+                    val (icon, text) = if (isInWishlist) {
+                        Icons.Default.Favorite to "In Wishlist"
+                    } else {
+                        Icons.Default.FavoriteBorder to "Wishlist"
+                    }
+
+                    Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text)
                 }
 
-                // Add to Cart Button - FIXED: Use passed isLoggedIn state
+                // Add to Cart Button
                 Button(
                     onClick = {
                         if (isLoggedIn) {
@@ -635,5 +700,23 @@ fun ProductActionBar(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SuccessMessage(message: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primary)
+            .padding(12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = message,
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
+        )
     }
 }
