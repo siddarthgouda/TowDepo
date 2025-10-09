@@ -21,6 +21,7 @@ import com.example.towdepo.MainApplication
 import com.example.towdepo.di.AppContainer
 import com.example.towdepo.ui.theme.screnns.CartScreen
 import com.example.towdepo.ui.theme.screnns.CheckoutScreen
+import com.example.towdepo.ui.theme.screnns.FeaturedProductsPreview
 import com.example.towdepo.ui.theme.screnns.HomeScreen
 import com.example.towdepo.ui.theme.screnns.LoginScreen
 import com.example.towdepo.ui.theme.screnns.OrderConfirmationScreen
@@ -94,6 +95,7 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                 }
             )
         }
+
 
         // Product List Screen
         composable("productList") {

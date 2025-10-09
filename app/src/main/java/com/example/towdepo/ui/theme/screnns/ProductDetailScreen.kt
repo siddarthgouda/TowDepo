@@ -615,12 +615,12 @@ fun ProductActionBar(
         Column {
             // Success Messages
             if (showAddedMessage) {
-                SuccessMessage("✅ Added to cart!")
+                SuccessMessage(" Added to cart!")
             }
             if (showWishlistMessage) {
                 SuccessMessage(
-                    if (isInWishlist) "💖 Added to wishlist!"
-                    else "🗑️ Removed from wishlist!"
+                    if (isInWishlist) " Added to wishlist!"
+                    else " Removed from wishlist!"
                 )
             }
 

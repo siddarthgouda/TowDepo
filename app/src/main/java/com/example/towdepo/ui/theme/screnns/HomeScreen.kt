@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -14,17 +16,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.towdepo.R
+import com.example.towdepo.data.DrawerItem
 import com.example.towdepo.viewmodels.AuthViewModel
 import kotlinx.coroutines.launch
+import kotlin.Unit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,8 +97,7 @@ fun HomeScreen(
                 }
             )
         }
-    )
-    {
+    ) {
         Scaffold(
             topBar = {
                 HomeTopAppBar(
@@ -104,11 +109,11 @@ fun HomeScreen(
                 )
             },
             floatingActionButton = {
-                // Optional: Add a quick action button
                 FloatingActionButton(
                     onClick = { onNavigateToProducts() },
                     containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.shadow(8.dp, shape = CircleShape)
                 ) {
                     Icon(Icons.Default.ShoppingCart, contentDescription = "Shop")
                 }
@@ -122,7 +127,6 @@ fun HomeScreen(
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeTopAppBar(
@@ -133,24 +137,37 @@ fun HomeTopAppBar(
             Image(
                 painter = painterResource(id = R.drawable.towdepo),
                 contentDescription = "App Logo",
-                modifier = Modifier.size(150.dp)
+                modifier = Modifier.size(120.dp)
             )
         },
         navigationIcon = {
-            IconButton(onClick = onMenuClick) {
+            IconButton(
+                onClick = onMenuClick,
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        color = Color.White.copy(alpha = 0.2f),
+                        shape = CircleShape
+                    )
+            ) {
                 Icon(
                     Icons.Default.Menu,
                     contentDescription = "Menu",
-                    tint = Color.White // White icon for better visibility
+                    tint = Color.White
                 )
             }
         },
-        modifier = Modifier.height(60.dp),
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0xFFFFBA6D), // Orange color
-            titleContentColor = Color.White, // White title/content
-            navigationIconContentColor = Color.White // White navigation icon
-        )
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color(0xFFFF6B35),
+            navigationIconContentColor = Color.White,
+            titleContentColor = Color.White
+        ),
+        modifier = Modifier
+            .height(70.dp)
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+            )
     )
 }
 
@@ -169,10 +186,8 @@ fun NavigationDrawerContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        // Drawer Header
         DrawerHeader()
 
-        // Drawer Items
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -195,7 +210,6 @@ fun NavigationDrawerContent(
             }
         }
 
-        // App Version
         DrawerFooter()
     }
 }
@@ -205,19 +219,18 @@ fun DrawerHeader() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .height(120.dp)
             .background(MaterialTheme.colorScheme.primaryContainer)
             .padding(24.dp),
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Center
     ) {
-        // Your App Logo Image
         Image(
-            painter = painterResource(id = R.drawable.towdepo), // Use your logo image
+            painter = painterResource(id = R.drawable.towdepo),
             contentDescription = "App Logo",
             modifier = Modifier
-                .size(200.dp) // Adjust size as needed
+                .size(180.dp)
         )
-
     }
 }
 
@@ -264,7 +277,7 @@ fun DrawerFooter() {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            "TowDepo © 2024",
+            "TowDepo © 2025",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -282,9 +295,9 @@ fun HomeContent(
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFF8D086), // Top - Full Orange
-                        Color(0xFFFFFFFF), // Middle - Light Orange
-                        Color(0xFFFFFFFF)  // Bottom - Full Light/White
+                        Color(0xFFFFF8F0),
+                        Color(0xFFFFFFFF),
+                        Color(0xFFF5F5F5)
                     )
                 )
             )
@@ -293,186 +306,238 @@ fun HomeContent(
             modifier = modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-
-            Spacer(modifier = Modifier.height(10.dp))
-            // Welcome Section
             WelcomeSection()
-
-            Spacer(modifier = Modifier.height(2.dp))
-
-            // Posters Section (replaced QuickActionsGrid)
             QuickActionsGrid(onNavigateToProducts = onNavigateToProducts)
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Featured Products Preview
-            FeaturedProductsPreview()
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // New Info-Image Section
+            FeaturedProductsPreview(onNavigateToProducts)
             InfoImageSection()
         }
     }
 }
+
 @Composable
 fun WelcomeSection() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-
-    ) {
-        // Add your images here
-        Image(
-            painter = painterResource(id = R.drawable.group1),
-            contentDescription = "Image 1",
-            modifier = Modifier.size(120.dp)
-        )
-        Image(
-            painter = painterResource(id = R.drawable.group2),
-            contentDescription = "Image 2",
-            modifier = Modifier.size(100.dp)
-        )
-        Image(
-            painter = painterResource(id = R.drawable.group3),
-            contentDescription = "Image 3",
-            modifier = Modifier.size(125.dp)
-        )
-        // Add more images as needed
-    }
-}
-@Composable
-fun QuickActionsGrid(
-    onNavigateToProducts: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-    ) {
-        // Poster 1
-        Box(modifier = Modifier.width(350.dp)) {
-            Image(
-                painter = painterResource(id = R.drawable.poster1),
-                contentDescription = "Poster 1",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        // Poster 2
-        Box(modifier = Modifier.width(350.dp)) {
-            Image(
-                painter = painterResource(id = R.drawable.poster2),
-                contentDescription = "Poster 2",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            )
-        }
-    }
-}
-
-
-@Composable
-fun FeaturedProductsPreview() {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            "Featured Products",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Horizontal scrollable product boxes
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Product 1 - Custom Safety T-Shirt
-            ProductBox(
-                imageRes = R.drawable.safety_tshirt, // Replace with your image
-                title = "Custom Safety T-Shirt",
-                modifier = Modifier.width(160.dp),
-                onClick = { /* Configure later */ }
-            )
-
-            // Product 2 - Affordable Truck Tires
-            ProductBox(
-                imageRes = R.drawable.truck_tires, // Replace with your image
-                title = "Affordable Truck Tires",
-                modifier = Modifier.width(160.dp),
-                onClick = { /* Configure later */ }
-            )
-
-            // Product 3 - Custom Safety Jackets
-            ProductBox(
-                imageRes = R.drawable.safety_jackets, // Replace with your image
-                title = "Custom Safety Jackets",
-                modifier = Modifier.width(160.dp),
-                onClick = { /* Configure later */ }
-            )
-        }
-    }
-}
-
-@Composable
-fun ProductBox(
-    imageRes: Int,
-    title: String,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
     Card(
-        onClick = onClick,
-        modifier = modifier
-            .height(200.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         )
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = painterResource(id = imageRes),
-                contentDescription = title,
+                painter = painterResource(id = R.drawable.group1),
+                contentDescription = "Image 1",
+                modifier = Modifier
+                    .size(100.dp)
+                    .shadow(4.dp, shape = CircleShape)
+                    .clip(CircleShape)
+            )
+
+            Image(
+                painter = painterResource(id = R.drawable.group2),
+                contentDescription = "Image 2",
+                modifier = Modifier
+                    .size(90.dp)
+                    .shadow(4.dp, shape = CircleShape)
+                    .clip(CircleShape)
+            )
+
+            Image(
+                painter = painterResource(id = R.drawable.group3),
+                contentDescription = "Image 3",
+                modifier = Modifier
+                    .size(100.dp)
+                    .shadow(4.dp, shape = CircleShape)
+                    .clip(CircleShape)
+            )
+        }
+    }
+}
+
+@Composable
+fun QuickActionsGrid(
+    onNavigateToProducts: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            "Special Offers",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            PosterCard(
+                imageRes = R.drawable.poster1,
+                onClick = onNavigateToProducts
+            )
+
+            PosterCard(
+                imageRes = R.drawable.poster2,
+                onClick = onNavigateToProducts
+            )
+        }
+    }
+}
+
+@Composable
+fun PosterCard(
+    imageRes: Int,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .width(280.dp)
+            .height(180.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Image(
+            painter = painterResource(id = imageRes),
+            contentDescription = "Poster",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+    }
+}
+
+@Composable
+fun FeaturedProductsPreview(
+    onNavigateToProducts: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Featured Products",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+
+            TextButton(onClick = { onNavigateToProducts() }) {
+                Text("View All")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+
+            ProductCard(
+                imageRes = R.drawable.safety_tshirt,
+                title = "Custom Safety T-Shirt",
+                price = "$24.99",
+                onClick = { onNavigateToProducts() }
+            )
+
+            ProductCard(
+                imageRes = R.drawable.truck_tires,
+                title = "Truck Tires",
+                price = "$189.99",
+                onClick = { onNavigateToProducts() }
+            )
+
+            ProductCard(
+                imageRes = R.drawable.safety_jackets,
+                title = "Safety Jackets",
+                price = "$45.99",
+                onClick = { onNavigateToProducts() }
+            )
+        }
+    }
+}
+
+@Composable
+fun ProductCard(
+    imageRes: Int,
+    title: String,
+    price: String,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .width(160.dp)
+            .height(220.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
-            )
+            ) {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            }
 
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 8.dp),
-                maxLines = 2
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
 
-            Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = price,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }
@@ -483,87 +548,114 @@ fun InfoImageSection() {
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // First Row - Image Left, Info Right
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Image on Left
-            Image(
-                painter = painterResource(id = R.drawable.image_left), // Replace with your image
-                contentDescription = "Left Image",
+        InfoCard(
+            imageRes = R.drawable.image_left,
+            title = "Safety Shirts & Jackets",
+            description = "Personal style in fashion is more than just what you wear—it's a visual manifestation of your personality. It's the art of curating outfits that resonate with your inner essence.",
+            imageOnLeft = true
+        )
+
+        InfoCard(
+            imageRes = R.drawable.image_right,
+            title = "Truck Tyres",
+            description = "With customization options available directly at TOWDEPO, outfitting the team with personalized apparel has never been easier.",
+            imageOnLeft = false
+        )
+    }
+}
+
+@Composable
+fun InfoCard(
+    imageRes: Int,
+    title: String,
+    description: String,
+    imageOnLeft: Boolean
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        if (imageOnLeft) {
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .height(150.dp)
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Info on Right
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.Start
+                    .fillMaxWidth()
+                    .height(180.dp)
             ) {
-                Text(
-                    "Safety shirts and safety jackets",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = title,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    contentScale = ContentScale.Crop
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    "Personal style in fashion is more than just what you wear—it's a visual manifestation of your personality. It's the art of curating outfits that resonate with your inner essence.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = title,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    contentScale = ContentScale.Crop
                 )
             }
-        }
-
-        // Second Row - Info Left, Image Right
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Info on Left
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text(
-                    "Truck Tyres",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    "With customization options available directly at TOWDEPO,outfitting the team with personalized apparel has never been easier.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Image on Right
-            Image(
-                painter = painterResource(id = R.drawable.image_right), // Replace with your image
-                contentDescription = "Right Image",
-                modifier = Modifier
-                    .weight(1f)
-                    .height(150.dp)
-            )
         }
     }
 }
-// Data classes for drawer items
-data class DrawerItem(
-    val title: String,
-    val icon: ImageVector,
-    val route: String
-)
+
 
 fun getDrawerItems(): List<DrawerItem> {
     return listOf(
