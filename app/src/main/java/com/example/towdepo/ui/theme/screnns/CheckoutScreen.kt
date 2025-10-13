@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.towdepo.data.Address
 import com.example.towdepo.di.AppContainer
 import com.example.towdepo.utils.CheckoutViewModelFactory
@@ -31,6 +32,7 @@ import com.example.towdepo.viewmodels.CheckoutViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CheckoutScreen(
+    navController: NavController,
     userId: String,
     onBackClick: () -> Unit,
     onOrderPlaced: () -> Unit
@@ -157,9 +159,9 @@ fun CheckoutScreen(
                     }
                 }
 
-                // Always show address form
+                // Collapsible Address Form
                 item {
-                    AddressForm(
+                    CollapsibleAddressForm(
                         userId = userId,
                         onSaveAddress = { viewModel.saveAddress(it) }
                     )
@@ -185,7 +187,11 @@ fun CheckoutScreen(
 
             // Checkout Button
             Button(
-                onClick = { viewModel.placeOrder() },
+                onClick = {
+                    // Generate a unique order ID for payment
+                    val paymentOrderId = "ORD_${System.currentTimeMillis()}"
+                    navController.navigate("payment/${paymentOrderId}/${viewModel.calculateTotal()}")
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
@@ -214,11 +220,268 @@ fun CheckoutScreen(
 }
 
 @Composable
+fun CollapsibleAddressForm(
+    userId: String,
+    onSaveAddress: (Address) -> Unit
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Header with expand/collapse button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { isExpanded = !isExpanded },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    "Add New Address",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Icon(
+                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            // Expandable content
+            if (isExpanded) {
+                Spacer(modifier = Modifier.height(16.dp))
+                AddressFormContent(
+                    userId = userId,
+                    onSaveAddress = { address ->
+                        onSaveAddress(address)
+                        isExpanded = false // Collapse after saving
+                    },
+                    onCancel = { isExpanded = false }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AddressFormContent(
+    userId: String,
+    onSaveAddress: (Address) -> Unit,
+    onCancel: () -> Unit
+) {
+    var fullName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var confirmEmail by remember { mutableStateOf("") }
+    var addressLine1 by remember { mutableStateOf("") }
+    var addressLine2 by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
+    var state by remember { mutableStateOf("") }
+    var postalCode by remember { mutableStateOf("") }
+    var country by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
+
+    val isEmailValid = email.isNotBlank() && email.contains("@")
+    val isConfirmEmailValid = confirmEmail.isNotBlank() && confirmEmail == email
+    val isFormValid = remember(
+        fullName, email, confirmEmail, addressLine1, city, state, postalCode, country, phoneNumber
+    ) {
+        fullName.isNotBlank() &&
+                isEmailValid &&
+                isConfirmEmailValid &&
+                addressLine1.isNotBlank() &&
+                city.isNotBlank() &&
+                state.isNotBlank() &&
+                postalCode.isNotBlank() &&
+                country.isNotBlank() &&
+                phoneNumber.isNotBlank()
+    }
+
+    Column {
+        OutlinedTextField(
+            value = fullName,
+            onValueChange = { fullName = it },
+            label = { Text("Full Name *") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            isError = fullName.isBlank()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email *") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            isError = email.isNotBlank() && !isEmailValid,
+            trailingIcon = {
+                if (email.isNotBlank() && !isEmailValid) {
+                    Icon(Icons.Default.Error, "Invalid email", tint = MaterialTheme.colorScheme.error)
+                }
+            }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = confirmEmail,
+            onValueChange = { confirmEmail = it },
+            label = { Text("Confirm Email *") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            isError = confirmEmail.isNotBlank() && !isConfirmEmailValid,
+            trailingIcon = {
+                if (confirmEmail.isNotBlank() && !isConfirmEmailValid) {
+                    Icon(Icons.Default.Error, "Emails don't match", tint = MaterialTheme.colorScheme.error)
+                }
+            }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = phoneNumber,
+            onValueChange = { phoneNumber = it },
+            label = { Text("Phone Number *") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = addressLine1,
+            onValueChange = { addressLine1 = it },
+            label = { Text("Address Line 1 *") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = addressLine2,
+            onValueChange = { addressLine2 = it },
+            label = { Text("Address Line 2 (Optional)") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row {
+            OutlinedTextField(
+                value = city,
+                onValueChange = { city = it },
+                label = { Text("City *") },
+                modifier = Modifier.weight(1f),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            OutlinedTextField(
+                value = state,
+                onValueChange = { state = it },
+                label = { Text("State *") },
+                modifier = Modifier.weight(1f),
+                singleLine = true
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row {
+            OutlinedTextField(
+                value = postalCode,
+                onValueChange = { postalCode = it },
+                label = { Text("Postal Code *") },
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            OutlinedTextField(
+                value = country,
+                onValueChange = { country = it },
+                label = { Text("Country *") },
+                modifier = Modifier.weight(1f),
+                singleLine = true
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Buttons row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            TextButton(
+                onClick = onCancel
+            ) {
+                Text("Cancel")
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Button(
+                onClick = {
+                    val newAddress = Address(
+                        userId = userId,
+                        fullName = fullName,
+                        email = email,
+                        confirmEmail = confirmEmail,
+                        addressLine1 = addressLine1,
+                        addressLine2 = addressLine2,
+                        city = city,
+                        state = state,
+                        postalCode = postalCode,
+                        country = country,
+                        phoneNumber = phoneNumber
+                    )
+                    onSaveAddress(newAddress)
+
+                    // Reset form
+                    fullName = ""
+                    email = ""
+                    confirmEmail = ""
+                    phoneNumber = ""
+                    addressLine1 = ""
+                    addressLine2 = ""
+                    city = ""
+                    state = ""
+                    postalCode = ""
+                    country = ""
+                },
+                enabled = isFormValid
+            ) {
+                Text("Save Address")
+            }
+        }
+    }
+}
+
+@Composable
 fun AddressSelectionSection(
     addresses: List<Address>,
     selectedAddress: Address?,
     onAddressSelected: (Address) -> Unit,
-    onAddressEdit: (Address) -> Unit, // Add edit callback
+    onAddressEdit: (Address) -> Unit,
     onAddressDelete: (Address) -> Unit
 ) {
     Column {
@@ -234,7 +497,7 @@ fun AddressSelectionSection(
                     address = address,
                     isSelected = selectedAddress?.id == address.id,
                     onSelect = { onAddressSelected(address) },
-                    onEdit = { onAddressEdit(address) }, // Pass edit callback
+                    onEdit = { onAddressEdit(address) },
                     onDelete = { onAddressDelete(address) }
                 )
             }
@@ -249,7 +512,7 @@ fun AddressItem(
     address: Address,
     isSelected: Boolean,
     onSelect: () -> Unit,
-    onEdit: () -> Unit, // Add edit parameter
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     var showDeleteConfirmation by remember { mutableStateOf(false) }
@@ -330,15 +593,6 @@ fun AddressItem(
                     Text(address.country, style = MaterialTheme.typography.bodyMedium)
                     Text(address.phoneNumber, style = MaterialTheme.typography.bodyMedium)
                     Text(address.email, style = MaterialTheme.typography.bodyMedium)
-
-                    // Address type badge
-                    Text(
-                        text = address.addressType,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .padding(top = 4.dp)
-                    )
                 }
             }
 
@@ -394,7 +648,7 @@ fun EditAddressDialog(
 ) {
     var fullName by remember { mutableStateOf(address.fullName) }
     var email by remember { mutableStateOf(address.email) }
-    var confirmEmail by remember { mutableStateOf(address.email) } // Pre-fill with same email
+    var confirmEmail by remember { mutableStateOf(address.email) }
     var addressLine1 by remember { mutableStateOf(address.addressLine1) }
     var addressLine2 by remember { mutableStateOf(address.addressLine2) }
     var city by remember { mutableStateOf(address.city) }
@@ -402,7 +656,6 @@ fun EditAddressDialog(
     var postalCode by remember { mutableStateOf(address.postalCode) }
     var country by remember { mutableStateOf(address.country) }
     var phoneNumber by remember { mutableStateOf(address.phoneNumber) }
-    var addressType by remember { mutableStateOf(address.addressType) }
 
     val isEmailValid = email.isNotBlank() && email.contains("@")
     val isConfirmEmailValid = confirmEmail.isNotBlank() && confirmEmail == email
@@ -552,28 +805,6 @@ fun EditAddressDialog(
                         singleLine = true
                     )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Address Type Selection
-                Text("Address Type", style = MaterialTheme.typography.labelMedium)
-                Row {
-                    listOf("Shipping", "Billing").forEach { type ->
-                        Row(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable { addressType = type }
-                                .padding(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = addressType == type,
-                                onClick = { addressType = type }
-                            )
-                            Text(type, modifier = Modifier.padding(start = 4.dp))
-                        }
-                    }
-                }
             }
         },
         confirmButton = {
@@ -582,7 +813,6 @@ fun EditAddressDialog(
                     val updatedAddress = address.copy(
                         fullName = fullName,
                         email = email,
-                        addressType = addressType,
                         addressLine1 = addressLine1,
                         addressLine2 = addressLine2,
                         city = city,
@@ -606,226 +836,7 @@ fun EditAddressDialog(
     )
 }
 
-@Composable
-fun AddressForm(
-    userId: String,
-    onSaveAddress: (Address) -> Unit
-) {
-    var fullName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var confirmEmail by remember { mutableStateOf("") }
-    var addressLine1 by remember { mutableStateOf("") }
-    var addressLine2 by remember { mutableStateOf("") }
-    var city by remember { mutableStateOf("") }
-    var state by remember { mutableStateOf("") }
-    var postalCode by remember { mutableStateOf("") }
-    var country by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var addressType by remember { mutableStateOf("Shipping") }
-
-    val isEmailValid = email.isNotBlank() && email.contains("@")
-    val isConfirmEmailValid = confirmEmail.isNotBlank() && confirmEmail == email
-    val isFormValid = remember(
-        fullName, email, confirmEmail, addressLine1, city, state, postalCode, country, phoneNumber
-    ) {
-        fullName.isNotBlank() &&
-                isEmailValid &&
-                isConfirmEmailValid &&
-                addressLine1.isNotBlank() &&
-                city.isNotBlank() &&
-                state.isNotBlank() &&
-                postalCode.isNotBlank() &&
-                country.isNotBlank() &&
-                phoneNumber.isNotBlank()
-    }
-
-    Column {
-        Text(
-            "Add New Address",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        OutlinedTextField(
-            value = fullName,
-            onValueChange = { fullName = it },
-            label = { Text("Full Name *") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            isError = fullName.isBlank()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email *") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            isError = email.isNotBlank() && !isEmailValid,
-            trailingIcon = {
-                if (email.isNotBlank() && !isEmailValid) {
-                    Icon(Icons.Default.Error, "Invalid email", tint = MaterialTheme.colorScheme.error)
-                }
-            }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = confirmEmail,
-            onValueChange = { confirmEmail = it },
-            label = { Text("Confirm Email *") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            isError = confirmEmail.isNotBlank() && !isConfirmEmailValid,
-            trailingIcon = {
-                if (confirmEmail.isNotBlank() && !isConfirmEmailValid) {
-                    Icon(Icons.Default.Error, "Emails don't match", tint = MaterialTheme.colorScheme.error)
-                }
-            }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = phoneNumber,
-            onValueChange = { phoneNumber = it },
-            label = { Text("Phone Number *") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = addressLine1,
-            onValueChange = { addressLine1 = it },
-            label = { Text("Address Line 1 *") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = addressLine2,
-            onValueChange = { addressLine2 = it },
-            label = { Text("Address Line 2 (Optional)") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row {
-            OutlinedTextField(
-                value = city,
-                onValueChange = { city = it },
-                label = { Text("City *") },
-                modifier = Modifier.weight(1f),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            OutlinedTextField(
-                value = state,
-                onValueChange = { state = it },
-                label = { Text("State *") },
-                modifier = Modifier.weight(1f),
-                singleLine = true
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row {
-            OutlinedTextField(
-                value = postalCode,
-                onValueChange = { postalCode = it },
-                label = { Text("Postal Code *") },
-                modifier = Modifier.weight(1f),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            OutlinedTextField(
-                value = country,
-                onValueChange = { country = it },
-                label = { Text("Country *") },
-                modifier = Modifier.weight(1f),
-                singleLine = true
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Address Type Selection
-        Text("Address Type", style = MaterialTheme.typography.labelMedium)
-        Row {
-            listOf("Shipping", "Billing").forEach { type ->
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { addressType = type }
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = addressType == type,
-                        onClick = { addressType = type }
-                    )
-                    Text(type, modifier = Modifier.padding(start = 4.dp))
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                val newAddress = Address(
-                    userId = userId,
-                    fullName = fullName,
-                    email = email,
-                    confirmEmail = confirmEmail,
-                    addressType = addressType,
-                    addressLine1 = addressLine1,
-                    addressLine2 = addressLine2,
-                    city = city,
-                    state = state,
-                    postalCode = postalCode,
-                    country = country,
-                    phoneNumber = phoneNumber
-                )
-                onSaveAddress(newAddress)
-
-                // Clear form after successful save
-                fullName = ""
-                email = ""
-                confirmEmail = ""
-                phoneNumber = ""
-                addressLine1 = ""
-                addressLine2 = ""
-                city = ""
-                state = ""
-                postalCode = ""
-                country = ""
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = isFormValid
-        ) {
-            Text("Save Address")
-        }
-    }
-}
+// Remove the old AddressForm composable since we're using CollapsibleAddressForm now
 
 @Composable
 fun OrderSummarySection(
@@ -918,7 +929,7 @@ fun OrderItemRow(cartItem: com.example.towdepo.data.CartItem) {
         }
 
         Text(
-            "$${String.format("%.2f", discountedPrice.toDouble() * cartItem.count)}",
+            "$${String.format("%.2f", discountedPrice * cartItem.count)}",
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium
         )

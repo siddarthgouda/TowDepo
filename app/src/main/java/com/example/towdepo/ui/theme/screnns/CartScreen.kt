@@ -26,8 +26,10 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.towdepo.api.CartApiService
 import com.example.towdepo.data.CartItem
+import com.example.towdepo.di.AppConfig
 import com.example.towdepo.repository.CartRepository
 import com.example.towdepo.security.TokenManager
+import com.example.towdepo.utils.ImageUtils
 import com.example.towdepo.viewmodels.CartViewModel
 import kotlinx.coroutines.delay
 
@@ -331,17 +333,14 @@ fun CartItemCard(
     // FIXED: Proper image URL construction
     val imageUrl = remember(cartItem) {
         if (!cartItem.productImage.isNullOrEmpty()) {
-            if (cartItem.productImage!!.startsWith("http")) {
-                cartItem.productImage
-            } else {
-                val cleanPath = cartItem.productImage!!.removePrefix("/")
-                "http://10.0.2.2:3501/uploads/product/$cleanPath"
-            }
+            // Use the safe image URL builder that handles AWS vs local environments
+            ImageUtils.getSafeProductImageUrl(cartItem.productImage)
         } else {
             null
         }
     }.also { url ->
         println("🛒 DEBUG: Image URL for ${cartItem.title}: $url")
+        println("🛒 DEBUG: Using environment: ${AppConfig.getEnvironmentInfo()}")
     }
 
     if (showDeleteConfirmation) {
@@ -402,6 +401,7 @@ fun CartItemCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Product Image
+
             if (!imageUrl.isNullOrEmpty()) {
                 AsyncImage(
                     model = imageUrl,
@@ -412,22 +412,17 @@ fun CartItemCard(
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                 )
             } else {
-                // Fallback placeholder if no image
-                Box(
+                // ✅ Use placeholder from ImageUtils
+                AsyncImage(
+                    model = ImageUtils.getPlaceholderImageUrl(),
+                    contentDescription = "No Image Available",
                     modifier = Modifier
                         .size(80.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Outlined.ShoppingCart,
-                        contentDescription = "No Image",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                )
             }
+
 
             Spacer(modifier = Modifier.width(16.dp))
 

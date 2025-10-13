@@ -11,6 +11,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -115,7 +117,7 @@ fun HomeScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.shadow(8.dp, shape = CircleShape)
                 ) {
-                    Icon(Icons.Default.ShoppingCart, contentDescription = "Shop")
+                    Icon(Icons.Default.ShoppingBasket, contentDescription = "Shop")
                 }
             }
         ) { paddingValues ->
@@ -137,7 +139,7 @@ fun HomeTopAppBar(
             Image(
                 painter = painterResource(id = R.drawable.towdepo),
                 contentDescription = "App Logo",
-                modifier = Modifier.size(120.dp)
+                modifier = Modifier.size(150.dp)
             )
         },
         navigationIcon = {
@@ -463,21 +465,18 @@ fun FeaturedProductsPreview(
             ProductCard(
                 imageRes = R.drawable.safety_tshirt,
                 title = "Custom Safety T-Shirt",
-                price = "$24.99",
                 onClick = { onNavigateToProducts() }
             )
 
             ProductCard(
                 imageRes = R.drawable.truck_tires,
                 title = "Truck Tires",
-                price = "$189.99",
                 onClick = { onNavigateToProducts() }
             )
 
             ProductCard(
                 imageRes = R.drawable.safety_jackets,
                 title = "Safety Jackets",
-                price = "$45.99",
                 onClick = { onNavigateToProducts() }
             )
         }
@@ -488,7 +487,7 @@ fun FeaturedProductsPreview(
 fun ProductCard(
     imageRes: Int,
     title: String,
-    price: String,
+
     onClick: () -> Unit
 ) {
     Card(
@@ -529,14 +528,6 @@ fun ProductCard(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = price,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
             }
         }
     }
@@ -660,12 +651,12 @@ fun InfoCard(
 fun getDrawerItems(): List<DrawerItem> {
     return listOf(
         DrawerItem("Home", Icons.Default.Home, "home"),
-        DrawerItem("Products", Icons.Default.ShoppingCart, "products"),
-        DrawerItem("My Cart", Icons.Default.ShoppingBasket, "cart"),
+        DrawerItem("Products", Icons.Default.ShoppingBasket, "products"),
+        DrawerItem("My Cart", Icons.Default.ShoppingCart, "cart"),
         DrawerItem("My Wishlist", Icons.Default.Favorite, "wishlist"),
         DrawerItem("My Profile", Icons.Default.Person, "profile"),
         DrawerItem("Settings", Icons.Default.Settings, "settings"),
-        DrawerItem("Help & Support", Icons.Default.Help, "help"),
-        DrawerItem("Logout", Icons.Default.ExitToApp, "logout")
+        DrawerItem("Help & Support", Icons.AutoMirrored.Filled.Help, "help"),
+        DrawerItem("Logout", Icons.AutoMirrored.Filled.ExitToApp, "logout")
     )
 }

@@ -24,7 +24,8 @@ import com.example.towdepo.ui.theme.screnns.CheckoutScreen
 import com.example.towdepo.ui.theme.screnns.FeaturedProductsPreview
 import com.example.towdepo.ui.theme.screnns.HomeScreen
 import com.example.towdepo.ui.theme.screnns.LoginScreen
-import com.example.towdepo.ui.theme.screnns.OrderConfirmationScreen
+
+import com.example.towdepo.ui.theme.screnns.PaymentScreen
 import com.example.towdepo.ui.theme.screnns.ProductDetailScreen
 import com.example.towdepo.ui.theme.screnns.ProductsScreen
 import com.example.towdepo.ui.theme.screnns.RegisterScreen
@@ -221,6 +222,31 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                 }
             }
         }
+        // Add this after the Cart Screen composable
+        composable("checkout") {
+            if (isLoggedIn && currentUserId.isNotEmpty()) {
+                // You'll need to create this CheckoutScreen or use a placeholder
+                CheckoutScreen(
+                    navController = navController,
+                    userId = currentUserId,
+                    onBackClick = { navController.popBackStack() },
+                    onOrderPlaced = {
+                        navController.navigate("orderConfirmation") {
+                            popUpTo("checkout") { inclusive = true }
+                        }
+                    }
+                )
+            } else {
+                LaunchedEffect(Unit) {
+                    navController.navigate("login?returnTo=checkout") {
+                        popUpTo("checkout") { inclusive = true }
+                    }
+                }
+                Box(modifier = Modifier.fillMaxSize()) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+            }
+        }
 
         // Wishlist Screen
         composable("wishlist") {
@@ -243,38 +269,36 @@ fun AppNavigation(authViewModel: AuthViewModel) {
             }
         }
 
-        // Checkout Screen
-        composable("checkout") {
-            if (isLoggedIn && currentUserId.isNotEmpty()) {
-                CheckoutScreen(
-                    userId = currentUserId, // Use actual user ID
-                    onBackClick = { navController.popBackStack() },
-                    onOrderPlaced = {
-                        navController.navigate("orderConfirmation")
-                    }
-                )
-            } else {
-                LaunchedEffect(Unit) {
-                    navController.navigate("login?returnTo=checkout") {
-                        popUpTo("checkout") { inclusive = true }
-                    }
-                }
-                Box(modifier = Modifier.fillMaxSize()) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-            }
-        }
+        // In your AppNavigation.kt, add the payment route:
+        composable(
+            route = "payment/{orderId}/{amount}",
+            arguments = listOf(
+                navArgument("orderId") { type = NavType.StringType },
+                navArgument("amount") { type = NavType.FloatType }
+            )
+        ) { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+            val amount = backStackEntry.arguments?.getFloat("amount")?.toDouble() ?: 0.0
 
-        // Order Confirmation Screen
-        composable("orderConfirmation") {
-            OrderConfirmationScreen(
-                onContinueShopping = {
-                    navController.navigate("home") {
-                        popUpTo("home") { inclusive = true }
+            PaymentScreen(
+                tokenManager = tokenManager,
+                orderId = orderId,
+                amount = amount,
+                onBackClick = { navController.popBackStack() },
+                onPaymentSuccess = {
+                    navController.navigate("orderConfirmation") {
+                        popUpTo("payment") { inclusive = true }
                     }
+                },
+                onPaymentFailed = { error ->
+                    // Show error and navigate back
+                    navController.popBackStack()
                 }
             )
         }
+
+
+
 
         // Profile Screen (Placeholder)
         composable("profile") {

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.towdepo.repository.AddressRepository
 import com.example.towdepo.repository.CartRepository
+import com.example.towdepo.security.TokenManager
 import com.example.towdepo.viewmodels.CheckoutViewModel
 
 class CheckoutViewModelFactory(
@@ -15,7 +16,10 @@ class CheckoutViewModelFactory(
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(CheckoutViewModel::class.java)) {
-            return CheckoutViewModel(addressRepository,cartRepository = cartRepository, userId = userId) as T
+            return CheckoutViewModel(
+                addressRepository, cartRepository = cartRepository, userId = userId,
+                tokenManager = TokenManager
+            ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

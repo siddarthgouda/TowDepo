@@ -32,6 +32,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.towdepo.di.AppContainer
 import com.example.towdepo.repository.ProductRepository
+import com.example.towdepo.utils.ImageUtils
 import com.example.towdepo.utils.WishlistViewModelFactory
 import com.example.towdepo.viewmodels.AuthViewModel
 import com.example.towdepo.viewmodels.CartViewModel
@@ -288,7 +289,7 @@ fun ProductDetailContent(product: com.example.towdepo.data.ApiProduct) {
         println("Number of images: ${product.images.size}")
         product.images.forEachIndexed { index, image ->
             println("Image $index: ${image.src}")
-            val imageUrl = buildImageUrl(image.src)
+            val imageUrl = ImageUtils.getProductImageUrl(image.src)
             println("Full URL $index: $imageUrl")
         }
         println("============================")
@@ -315,7 +316,7 @@ fun ProductDetailContent(product: com.example.towdepo.data.ApiProduct) {
         ) {
             if (product.images.isNotEmpty()) {
                 val firstImage = product.images.first()
-                val imageUrl = buildImageUrl(firstImage.src)
+                val imageUrl = ImageUtils.getProductImageUrl(firstImage.src)
 
                 ProductImageLoader(
                     imageUrl = imageUrl,
@@ -496,11 +497,7 @@ fun ProductDetailContent(product: com.example.towdepo.data.ApiProduct) {
 }
 
 private fun buildImageUrl(imageSrc: String): String {
-    return when {
-        imageSrc.startsWith("http") -> imageSrc
-        imageSrc.startsWith("/") -> "http://10.0.2.2:3501$imageSrc"
-        else -> "http://10.0.2.2:3501/uploads/product/$imageSrc"
-    }
+    return ImageUtils.getProductImageUrl(imageSrc)
 }
 
 @Composable

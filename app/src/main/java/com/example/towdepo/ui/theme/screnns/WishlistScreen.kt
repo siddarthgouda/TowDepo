@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.towdepo.data.WishlistItem
+import com.example.towdepo.utils.ImageUtils
 import com.example.towdepo.utils.WishlistViewModelFactory
 import com.example.towdepo.viewmodels.WishlistViewModel
 
@@ -171,35 +172,27 @@ fun WishlistItemCard(
     onProductClick: (String) -> Unit,
     onRemoveClick: () -> Unit
 ) {
-    // FIXED: Proper image URL construction - same as CartScreen
+
     val imageUrl = remember(item) {
         when {
             !item.image.isNullOrEmpty() -> {
-                if (item.image!!.startsWith("http")) {
-                    item.image
-                } else {
-                    val cleanPath = item.image!!.removePrefix("/")
-                    "http://10.0.2.2:3501/uploads/product/$cleanPath"
-                }
+                // Use ImageUtils for the main item image
+                ImageUtils.getSafeProductImageUrl(item.image)
             }
             item.product.images.isNotEmpty() -> {
-                val productImage = item.product.images.first().src
-                if (productImage.startsWith("http")) {
-                    productImage
-                } else {
-                    val cleanPath = productImage.removePrefix("/")
-                    "http://10.0.2.2:3501/uploads/product/$cleanPath"
-                }
+                // Use ImageUtils for product images
+                ImageUtils.getSafeProductImageUrl(item.product.images.first().src)
             }
             else -> null
         }
     }.also { url ->
-        println("❤️ DEBUG Wishlist: Image URL for '${item.title}': $url")
+        println("️ DEBUG Wishlist: Image URL for '${item.title}': $url")
+        println(" DEBUG Wishlist: Using environment: ${com.example.towdepo.di.AppConfig.getEnvironmentInfo()}")
     }
 
     Card(
         onClick = {
-            println("🎯 DEBUG: Clicked wishlist item: ${item.title}")
+            println(" DEBUG: Clicked wishlist item: ${item.title}")
             onProductClick(item.product.id)
         },
         modifier = Modifier.fillMaxWidth(),
@@ -212,7 +205,7 @@ fun WishlistItemCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Product Image - Using AsyncImage like CartScreen
+            // Product Image - Using ImageUtils
             if (!imageUrl.isNullOrEmpty()) {
                 AsyncImage(
                     model = imageUrl,
@@ -224,21 +217,16 @@ fun WishlistItemCard(
                     contentScale = ContentScale.Crop
                 )
             } else {
-                // Fallback placeholder if no image - same as CartScreen
-                Box(
+                // ✅ Use placeholder from ImageUtils
+                AsyncImage(
+                    model = ImageUtils.getPlaceholderImageUrl(),
+                    contentDescription = "No Image Available",
                     modifier = Modifier
                         .size(100.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Favorite,
-                        contentDescription = "No Image",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
+                    contentScale = ContentScale.Crop
+                )
             }
 
             Spacer(modifier = Modifier.width(16.dp))

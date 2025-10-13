@@ -30,10 +30,13 @@ data class ApiResponse<T>(
 data class CheckoutState(
     val addresses: List<Address> = emptyList(),
     val selectedAddress: Address? = null,
-    val cartItems: List<CartItem> = emptyList(), // Add cart items
+    val cartItems: List<CartItem> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val isOrderPlaced: Boolean = false
+    val isOrderPlaced: Boolean = false,
+    val showPaymentScreen: Boolean = false,
+
+
 )
 
 // Result.kt

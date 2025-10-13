@@ -72,6 +72,10 @@ dependencies {
     implementation(libs.androidx.espresso.core)
     implementation(libs.mediation.test.suite)
 
+    //Razorpay
+
+    implementation("com.razorpay:checkout:1.6.26")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

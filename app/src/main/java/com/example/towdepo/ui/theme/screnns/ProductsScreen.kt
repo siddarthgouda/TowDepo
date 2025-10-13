@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.towdepo.di.AppContainer
 import com.example.towdepo.repository.ProductRepository
+import com.example.towdepo.utils.ImageUtils
 import com.example.towdepo.viewmodels.ProductViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -281,11 +282,16 @@ fun ProductCard(
                         .size(80.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
-                ) {
+                )  {
                     if (product.images.isNotEmpty()) {
+                        val imageUrl = ImageUtils.getProductImageUrl(product.images.first().src)
                         Image(
                             painter = rememberAsyncImagePainter(
-                                model = "http://10.0.2.2:3501/uploads/product/${product.images.first().src}"
+                                model = imageUrl,
+                                error = rememberAsyncImagePainter(
+                                    model = ImageUtils.getPlaceholderImageUrl()
+                                )
+
                             ),
                             contentDescription = product.title,
                             modifier = Modifier.fillMaxSize(),
