@@ -27,7 +27,7 @@ object AppContainer {
 
     private lateinit var _context: Context
 
-    // Make these non-nullable with lateinit
+
     private lateinit var _productApiService: ProductApiService
     private lateinit var _productRepository: ProductRepository
     private lateinit var _cartRepository: CartRepository

@@ -16,8 +16,8 @@ object RetrofitInstance {
 
     fun initialize(tokenManager: com.example.towdepo.security.TokenManager) {
         this.tokenManager = tokenManager
-        println("🚀 RetrofitInstance initialized with: ${AppConfig.getEnvironmentInfo()}")
-        println("📡 Using Base URL: $BASE_URL")
+        println(" RetrofitInstance initialized with: ${AppConfig.getEnvironmentInfo()}")
+        println(" Using Base URL: $BASE_URL")
     }
 
     private val okHttpClient: OkHttpClient by lazy {
