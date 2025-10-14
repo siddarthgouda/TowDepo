@@ -44,20 +44,20 @@ fun PaymentScreen(
 
     // Debug logs
     LaunchedEffect(paymentOrderState) {
-        println("🔄 Payment Order State Changed: $paymentOrderState")
+        println(" Payment Order State Changed: $paymentOrderState")
     }
 
     LaunchedEffect(verificationState) {
-        println("🔄 Verification State Changed: $verificationState")
+        println(" Verification State Changed: $verificationState")
     }
 
     // Step 1: Create payment order when screen loads
     LaunchedEffect(Unit) {
-        println("🚀 PaymentScreen launched")
+        println(" PaymentScreen launched")
         println("Order ID: $orderId, Amount: $amount, Token: ${token.take(10)}...")
 
         if (token.isNotEmpty()) {
-            println("📞 Calling createPaymentOrder...")
+            println(" Calling createPaymentOrder...")
             viewModel.createPaymentOrder(token, amount, orderId)
         } else {
             onPaymentFailed("User not authenticated")
@@ -70,7 +70,7 @@ fun PaymentScreen(
             val successState = paymentOrderState as PaymentOrderState.Success
             val orderData = successState.data.data
 
-            println("✅ Payment order created successfully!")
+            println(" Payment order created successfully!")
             println("Razorpay Order ID: ${orderData.razorpayOrderId}")
             println("Razorpay Key: ${orderData.key.take(10)}...")
             println("Amount in paise: ${orderData.amount} (₹${orderData.amount / 100})")
@@ -78,13 +78,13 @@ fun PaymentScreen(
             razorpayPayment = RazorpayPayment(
                 context = context,
                 onSuccess = { razorpayOrderId, razorpayPaymentId, razorpaySignature ->
-                    println("🎉 Razorpay payment successful!")
+                    println(" Razorpay payment successful!")
                     println("Order ID: $razorpayOrderId")
                     println("Payment ID: $razorpayPaymentId")
                     println("Signature: $razorpaySignature")
 
                     coroutineScope.launch {
-                        println("📞 Calling verifyPayment...")
+                        println(" Calling verifyPayment...")
                         viewModel.verifyPayment(
                             token = token,
                             razorpayOrderId = razorpayOrderId,
@@ -95,11 +95,11 @@ fun PaymentScreen(
                     }
                 },
                 onError = { error ->
-                    println("❌ Razorpay error: $error")
+                    println(" Razorpay error: $error")
                     onPaymentFailed("Payment failed: $error")
                 }
             ).apply {
-                println("🔑 Initializing Razorpay with key...")
+                println(" Initializing Razorpay with key...")
                 initialize(orderData.key)
             }
         }
@@ -108,7 +108,7 @@ fun PaymentScreen(
     // Step 3: Handle verification success
     LaunchedEffect(verificationState) {
         if (verificationState is PaymentVerificationState.Success) {
-            println("🎉 Payment verified successfully!")
+            println(" Payment verified successfully!")
             onPaymentSuccess()
         }
     }

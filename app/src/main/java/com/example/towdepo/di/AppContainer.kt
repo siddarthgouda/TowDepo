@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
 
 @SuppressLint("StaticFieldLeak")
 object AppContainer {
-    // Use dynamic base URL from AppConfig
+
     private val BASE_URL = AppConfig.getBaseUrl()
 
     private lateinit var _context: Context
@@ -45,8 +45,8 @@ object AppContainer {
         this._context = context.applicationContext
 
         // Log which environment we're using
-        println("🚀 Initializing AppContainer with: ${AppConfig.getEnvironmentInfo()}")
-        println("📡 Base URL: $BASE_URL")
+        println(" Initializing AppContainer with: ${AppConfig.getEnvironmentInfo()}")
+        println(" Base URL: $BASE_URL")
 
         initializeProductApi()
         initializeCartApi(tokenManager)
@@ -69,7 +69,7 @@ object AppContainer {
 
         // Use the main BASE_URL for all services
         val productRetrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL) // ⬅️ Changed from "${BASE_URL}product/" to just BASE_URL
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -93,9 +93,9 @@ object AppContainer {
 
             if (token != null && token.isNotEmpty()) {
                 requestBuilder.header("Authorization", "Bearer $token")
-                println("🔐 DEBUG: Adding Authorization header to cart request")
+                println(" DEBUG: Adding Authorization header to cart request")
             } else {
-                println("⚠️ DEBUG: No token found for cart request")
+                println(" DEBUG: No token found for cart request")
             }
 
             val request = requestBuilder.build()
@@ -136,9 +136,9 @@ object AppContainer {
             // Add Authorization header if token exists
             if (token != null && token.isNotEmpty()) {
                 requestBuilder.header("Authorization", "Bearer $token")
-                println("🔐 DEBUG: Adding Authorization header to wishlist request")
+                println(" DEBUG: Adding Authorization header to wishlist request")
             } else {
-                println("⚠️ DEBUG: No token found for wishlist request")
+                println(" DEBUG: No token found for wishlist request")
             }
 
             val request = requestBuilder.build()
@@ -177,9 +177,9 @@ object AppContainer {
 
             if (token != null && token.isNotEmpty()) {
                 requestBuilder.header("Authorization", "Bearer $token")
-                println("🔐 DEBUG: Adding Authorization header to address request")
+                println(" DEBUG: Adding Authorization header to address request")
             } else {
-                println("⚠️ DEBUG: No token found for address request")
+                println(" DEBUG: No token found for address request")
             }
 
             val request = requestBuilder.build()
@@ -218,9 +218,9 @@ object AppContainer {
 
             if (token != null && token.isNotEmpty()) {
                 requestBuilder.header("Authorization", "Bearer $token")
-                println("🔐 DEBUG: Adding Authorization header to payment request")
+                println(" DEBUG: Adding Authorization header to payment request")
             } else {
-                println("⚠️ DEBUG: No token found for payment request")
+                println(" DEBUG: No token found for payment request")
             }
 
             val request = requestBuilder.build()

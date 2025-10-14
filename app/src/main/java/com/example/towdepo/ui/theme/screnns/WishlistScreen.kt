@@ -41,7 +41,7 @@ fun WishlistScreen(
     val error by wishlistViewModel.error.collectAsState()
 
     LaunchedEffect(Unit) {
-        println("🚀 DEBUG WishlistScreen: Composable launched - loading wishlist")
+        println(" DEBUG WishlistScreen: Composable launched - loading wishlist")
         wishlistViewModel.loadWishlist()
     }
 
@@ -154,7 +154,7 @@ fun WishlistScreen(
                                 item = item,
                                 onProductClick = onProductClick,
                                 onRemoveClick = {
-                                    println("🗑️ DEBUG: Removing item: ${item.id?.oid}")
+                                    println("️ DEBUG: Removing item: ${item.id?.oid}")
                                     item.id?.oid?.let { wishlistViewModel.removeFromWishlist(it) }
                                 }
                             )
@@ -217,7 +217,7 @@ fun WishlistItemCard(
                     contentScale = ContentScale.Crop
                 )
             } else {
-                // ✅ Use placeholder from ImageUtils
+                //  Use placeholder from ImageUtils
                 AsyncImage(
                     model = ImageUtils.getPlaceholderImageUrl(),
                     contentDescription = "No Image Available",
@@ -268,7 +268,7 @@ fun WishlistItemCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "₹${item.mrp}",
+                        text = "$${item.mrp}",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -304,7 +304,7 @@ fun WishlistItemCard(
                 // Stock Status
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = if (item.product.inStock) "✅ In Stock" else "❌ Out of Stock",
+                    text = if (item.product.inStock) " In Stock" else " Out of Stock",
                     style = MaterialTheme.typography.labelSmall,
                     color = if (item.product.inStock) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.error
@@ -316,7 +316,7 @@ fun WishlistItemCard(
             // Remove Button
             IconButton(
                 onClick = {
-                    println("🗑️ DEBUG: Remove button clicked for: ${item.title}")
+                    println("🗑 DEBUG: Remove button clicked for: ${item.title}")
                     onRemoveClick()
                 },
                 modifier = Modifier.size(48.dp)

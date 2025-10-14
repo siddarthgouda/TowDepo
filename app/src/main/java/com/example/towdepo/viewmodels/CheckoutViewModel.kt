@@ -211,14 +211,14 @@ class CheckoutViewModel(
                     throw Exception("Your cart is empty")
                 }
 
-                println("🟡 DEBUG: [ViewModel] Placing order...")
+                println(" DEBUG: [ViewModel] Placing order...")
                 // Here you would call your order service
                 // For now, we'll just simulate success
                 _checkoutState.update { it.copy(isOrderPlaced = true, isLoading = false) }
-                println("🟢 DEBUG: [ViewModel] Order placed successfully")
+                println(" DEBUG: [ViewModel] Order placed successfully")
 
             } catch (e: Exception) {
-                println("🔴 DEBUG: [ViewModel] Failed to place order: ${e.message}")
+                println(" DEBUG: [ViewModel] Failed to place order: ${e.message}")
                 _checkoutState.update {
                     it.copy(
                         isLoading = false,

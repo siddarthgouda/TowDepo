@@ -8,15 +8,15 @@ object AppConfig {
 
 
     // Base URLs
-    const val DEV_BASE_URL = "http://10.0.2.2:3501/v1/" // For emulator
-    const val PROD_BASE_URL = "http://$AWS_SERVER_IP:$SERVER_PORT/v1/" // For AWS server
+    const val DEV_BASE_URL = "http://10.0.2.2:3501/v1/"
+    const val PROD_BASE_URL = "http://$AWS_SERVER_IP:$SERVER_PORT/v1/"
 
     // Image Base URLs
     const val DEV_IMAGE_BASE_URL = "http://10.0.2.2:3501/uploads/product/"
     const val PROD_IMAGE_BASE_URL = "http://$AWS_SERVER_IP:$SERVER_PORT/uploads/product/"
 
     // Switch between environments
-    const val USE_PRODUCTION = false // Set to true for AWS server
+    const val USE_PRODUCTION = false
 
     // Get the appropriate base URL
     fun getBaseUrl(): String {

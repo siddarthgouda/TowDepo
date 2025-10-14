@@ -262,7 +262,7 @@ fun CollapsibleAddressForm(
                     userId = userId,
                     onSaveAddress = { address ->
                         onSaveAddress(address)
-                        isExpanded = false // Collapse after saving
+                        isExpanded = false
                     },
                     onCancel = { isExpanded = false }
                 )
@@ -894,7 +894,7 @@ fun OrderSummarySection(
             // Free shipping message
             if (shipping == 0.0) {
                 Text(
-                    "🎉 You've qualified for free shipping!",
+                    " You've qualified for free shipping!",
                     style = MaterialTheme.typography.labelSmall,
                     color = Color(0xFF2E7D32),
                     modifier = Modifier.padding(top = 8.dp)

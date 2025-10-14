@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -38,44 +37,44 @@ fun RegisterScreen(
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        OutlinedTextField(
+        // Custom Name Text Field
+        TextFieldHint(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Full Name") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            hint = "Full Name",
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
+        // Custom Email Text Field
+        TextFieldHint(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            hint = "Email",
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
+        // Custom Password Text Field
+        TextFieldHint(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth(),
+            hint = "Password",
             visualTransformation = PasswordVisualTransformation(),
-            singleLine = true
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
+        // Custom Confirm Password Text Field
+        TextFieldHint(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            label = { Text("Confirm Password") },
-            modifier = Modifier.fillMaxWidth(),
+            hint = "Confirm Password",
             visualTransformation = PasswordVisualTransformation(),
-            singleLine = true
+            modifier = Modifier.fillMaxWidth()
         )
 
         if (password.isNotEmpty() && confirmPassword.isNotEmpty() && password != confirmPassword) {
@@ -113,7 +112,7 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         TextButton(onClick = onNavigateToLogin) {
-            Text("Already have an account? Sign in")
+            Text("Already have an account?")
         }
     }
 }

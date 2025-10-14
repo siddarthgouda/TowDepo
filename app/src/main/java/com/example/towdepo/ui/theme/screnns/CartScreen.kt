@@ -41,11 +41,11 @@ fun CartScreen(
     apiService: CartApiService,
     userId: String
 ) {
-    println("🛒 DEBUG: CartScreen composable called")
+    println(" DEBUG: CartScreen composable called")
 
     // Create ViewModel with proper coroutine scope to avoid ANR
     val cartViewModel: CartViewModel = remember {
-        println("🛒 DEBUG: Creating CartRepository and CartViewModel")
+        println(" DEBUG: Creating CartRepository and CartViewModel")
         val cartRepository = CartRepository(apiService, tokenManager)
         CartViewModel(cartRepository)
     }
@@ -67,7 +67,7 @@ fun CartScreen(
 
     // Load cart items only once when screen is first shown
     LaunchedEffect(Unit) {
-        println("🛒 DEBUG: CartScreen LaunchedEffect - loading cart items")
+        println(" DEBUG: CartScreen LaunchedEffect - loading cart items")
         cartViewModel.loadCartItems()
     }
 
@@ -85,7 +85,7 @@ fun CartScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            println("🛒 DEBUG: Back button clicked")
+                            println(" DEBUG: Back button clicked")
                             navController.popBackStack()
                         }
                     ) {
@@ -104,7 +104,7 @@ fun CartScreen(
                     totalAmount = cartViewModel.calculateTotal(),
                     totalItems = cartViewModel.getTotalItems(),
                     onCheckout = {
-                        println("🛒 DEBUG: Proceeding to checkout")
+                        println(" DEBUG: Proceeding to checkout")
                         navController.navigate("checkout")
                     }
                 )
@@ -277,7 +277,7 @@ private fun CartContent(
                 CartItemList(
                     cartItems = cartItems,
                     onUpdateQuantity = { cartItemId, newQuantity ->
-                        println("🛒 DEBUG: CartScreen - Updating quantity for: $cartItemId to $newQuantity")
+                        println(" DEBUG: CartScreen - Updating quantity for: $cartItemId to $newQuantity")
                         if (newQuantity > 0) {
                             cartViewModel.updateCartItem(cartItemId, newQuantity)
                         } else {
@@ -285,7 +285,7 @@ private fun CartContent(
                         }
                     },
                     onRemoveItem = { cartItemId ->
-                        println("🛒 DEBUG: CartScreen - Deleting item: $cartItemId")
+                        println(" DEBUG: CartScreen - Deleting item: $cartItemId")
                         cartViewModel.deleteCartItem(cartItemId)
                     }
                 )
@@ -326,7 +326,7 @@ fun CartItemCard(
     // Safely get the cart item ID with debug logging
     val cartItemId = remember(cartItem) {
         val id = cartItem.safeId
-        println("🛒 DEBUG CartItemCard: Cart item '${cartItem.title}' ID: '$id'")
+        println(" DEBUG CartItemCard: Cart item '${cartItem.title}' ID: '$id'")
         id
     }
 
@@ -339,8 +339,8 @@ fun CartItemCard(
             null
         }
     }.also { url ->
-        println("🛒 DEBUG: Image URL for ${cartItem.title}: $url")
-        println("🛒 DEBUG: Using environment: ${AppConfig.getEnvironmentInfo()}")
+        println("DEBUG: Image URL for ${cartItem.title}: $url")
+        println(" DEBUG: Using environment: ${AppConfig.getEnvironmentInfo()}")
     }
 
     if (showDeleteConfirmation) {
@@ -361,10 +361,10 @@ fun CartItemCard(
                     onClick = {
                         showDeleteConfirmation = false
                         if (cartItemId.isNotEmpty()) {
-                            println("🛒 DEBUG: Remove button clicked for ID: $cartItemId")
+                            println(" DEBUG: Remove button clicked for ID: $cartItemId")
                             onRemoveItem(cartItemId)
                         } else {
-                            println("🛒 DEBUG: Cannot remove - empty cart item ID")
+                            println(" DEBUG: Cannot remove - empty cart item ID")
                         }
                     }
                 ) {
@@ -412,7 +412,7 @@ fun CartItemCard(
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                 )
             } else {
-                // ✅ Use placeholder from ImageUtils
+                //  Use placeholder from ImageUtils
                 AsyncImage(
                     model = ImageUtils.getPlaceholderImageUrl(),
                     contentDescription = "No Image Available",
@@ -456,7 +456,7 @@ fun CartItemCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "₹$discountedPrice",
+                        text = "$$discountedPrice",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -464,7 +464,7 @@ fun CartItemCard(
 
                     if (cartItem.discount.isNotEmpty() && cartItem.discount != "0") {
                         Text(
-                            text = "₹${cartItem.mrp}",
+                            text = "$${cartItem.mrp}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textDecoration = TextDecoration.LineThrough
@@ -522,10 +522,10 @@ fun CartItemCard(
                     IconButton(
                         onClick = {
                             if (cartItemId.isNotEmpty() && cartItem.count > 1) {
-                                println("🛒 DEBUG: Decrease button clicked for ID: $cartItemId, current count: ${cartItem.count}")
+                                println(" DEBUG: Decrease button clicked for ID: $cartItemId, current count: ${cartItem.count}")
                                 onUpdateQuantity(cartItemId, cartItem.count - 1)
                             } else {
-                                println("🛒 DEBUG: Cannot decrease - empty cart item ID or count too low")
+                                println(" DEBUG: Cannot decrease - empty cart item ID or count too low")
                             }
                         },
                         modifier = Modifier.size(36.dp),
@@ -542,10 +542,10 @@ fun CartItemCard(
                     IconButton(
                         onClick = {
                             if (cartItemId.isNotEmpty()) {
-                                println("🛒 DEBUG: Increase button clicked for ID: $cartItemId, current count: ${cartItem.count}")
+                                println(" DEBUG: Increase button clicked for ID: $cartItemId, current count: ${cartItem.count}")
                                 onUpdateQuantity(cartItemId, cartItem.count + 1)
                             } else {
-                                println("🛒 DEBUG: Cannot increase - empty cart item ID")
+                                println(" DEBUG: Cannot increase - empty cart item ID")
                             }
                         },
                         modifier = Modifier.size(36.dp)
@@ -562,10 +562,10 @@ fun CartItemCard(
                 IconButton(
                     onClick = {
                         if (cartItemId.isNotEmpty()) {
-                            println("🛒 DEBUG: Delete button clicked for ID: $cartItemId")
+                            println(" DEBUG: Delete button clicked for ID: $cartItemId")
                             showDeleteConfirmation = true
                         } else {
-                            println("🛒 DEBUG: Cannot delete - empty cart item ID")
+                            println(" DEBUG: Cannot delete - empty cart item ID")
                         }
                     },
                     modifier = Modifier.size(36.dp)
