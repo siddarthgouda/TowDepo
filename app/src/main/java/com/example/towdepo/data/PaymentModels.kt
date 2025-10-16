@@ -17,7 +17,11 @@ data class PaymentOrderData(
     val amount: Int,
     val currency: String,
     val orderId: String,
-    val key: String
+    val key: String,
+    val customerEmail: String? = null,
+    val customerPhone: String? = null,
+    val customerName: String? = null
+
 )
 
 data class PaymentVerificationRequest(

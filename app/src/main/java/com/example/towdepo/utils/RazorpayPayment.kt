@@ -14,40 +14,47 @@ class RazorpayPayment(
 ) : PaymentResultListener {
 
     private var razorpayOrderId: String = ""
+    private lateinit var checkout: Checkout
 
     fun initialize(keyId: String) {
         try {
-            Checkout().setKeyID(keyId)
-            println("✅ Razorpay initialized")
+            checkout = Checkout()
+            checkout.setKeyID(keyId)
+            println("✅ Razorpay initialized with key: ${keyId.take(10)}...")
         } catch (e: Exception) {
-            println("⚠️ Razorpay init note: ${e.message}")
+            println("❌ Razorpay init failed: ${e.message}")
+            onError("Payment initialization failed")
         }
     }
 
     fun startPayment(orderData: PaymentOrderData) {
         val activity = context as? Activity ?: run {
-            onError("Payment requires Activity")
+            onError("Payment requires Activity context")
             return
         }
 
         try {
             razorpayOrderId = orderData.razorpayOrderId
 
+            println("🔄 User clicked Pay Now button")
+            println("💰 Starting Razorpay payment with order: $razorpayOrderId")
+            println("💵 Amount: ${orderData.amount}")
+
             val options = JSONObject().apply {
                 put("name", "TowDepo")
                 put("description", "Order #${orderData.orderId}")
-                put("image", "https://your-logo-url.com/logo.png") // Add your logo
-                put("order_id", orderData.razorpayOrderId)
+                put("image", "https://your-logo-url.com/logo.png")
+                put("order_id", razorpayOrderId)
                 put("currency", orderData.currency)
                 put("amount", orderData.amount)
                 put("prefill", JSONObject().apply {
-                    put("email", "customer@towdepo.com") // Better email
-                    put("contact", "9876543210") // Better phone
+                    put("email", orderData.customerEmail ?: "customer@towdepo.com")
+                    put("contact", orderData.customerPhone ?: "9876543210")
+                    put("name", orderData.customerName ?: "Customer")
                 })
                 put("theme", JSONObject().apply {
                     put("color", "#FF6B35")
                 })
-                // Add retry for better UX
                 put("retry", JSONObject().apply {
                     put("enabled", true)
                     put("max_count", 4)
@@ -56,20 +63,20 @@ class RazorpayPayment(
 
             println("🎯 Opening Razorpay Payment Gateway...")
 
-            val checkout = Checkout()
-            checkout.setKeyID(orderData.key) // Set key again for safety
+            // Make sure we're using the same checkout instance
             checkout.open(activity, options)
 
         } catch (e: Exception) {
             println("❌ Failed to open Razorpay: ${e.message}")
+            e.printStackTrace()
             onError("Payment gateway error: ${e.message}")
         }
     }
 
     override fun onPaymentSuccess(razorpayPaymentId: String?) {
         println("🎉 PAYMENT SUCCESSFUL!")
-        println("📦 Order: $razorpayOrderId")
-        println("💳 Payment: $razorpayPaymentId")
+        println("📦 Order ID: $razorpayOrderId")
+        println("💳 Payment ID: $razorpayPaymentId")
 
         if (razorpayPaymentId != null) {
             onSuccess(razorpayOrderId, razorpayPaymentId, "signature_placeholder")
@@ -83,9 +90,10 @@ class RazorpayPayment(
 
         val userFriendlyError = when (code) {
             Checkout.NETWORK_ERROR -> "Please check your internet connection"
+            Checkout.INVALID_OPTIONS -> "Invalid payment options"
             Checkout.PAYMENT_CANCELED -> "Payment was cancelled"
-            Checkout.TLS_ERROR -> "Please update the app"
-            else -> "Payment failed: ${response ?: "Please try again"}"
+            Checkout.TLS_ERROR -> "Security error. Please update the app"
+            else -> "Payment failed: ${response ?: "Unknown error"}"
         }
 
         onError(userFriendlyError)

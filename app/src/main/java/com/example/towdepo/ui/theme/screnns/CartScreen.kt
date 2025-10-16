@@ -172,7 +172,7 @@ fun CartBottomBar(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "₹${String.format("%.2f", totalAmount)}",
+                        text = "$${String.format("%.2f", totalAmount)}",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary

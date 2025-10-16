@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 data class WishlistItem(
     @SerializedName("_id") val id: WishlistId? = null,
     val title: String,
-    val product: ApiProduct,
+    val product: ApiProduct?,
     val mrp: Double,
     val discount: String,
     val brand: String = "N/A",

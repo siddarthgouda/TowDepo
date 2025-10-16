@@ -75,6 +75,7 @@ dependencies {
     //Razorpay
 
     implementation("com.razorpay:checkout:1.6.26")
+    implementation("androidx.webkit:webkit:1.8.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

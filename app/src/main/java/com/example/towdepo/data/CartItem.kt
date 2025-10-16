@@ -31,7 +31,7 @@ data class CartItem(
     val title: String,
 
     @SerializedName("product")
-    val product: CartProduct, // Simplified product for cart
+    val product: CartProduct?, // Simplified product for cart
 
     @SerializedName("mrp")
     val mrp: Double,
@@ -55,10 +55,10 @@ data class CartItem(
         get() = mongoId?.oid ?: id ?: ""
 
     val quantity: Int
-        get() = count
+        get() = count?:1
 
     val productImage: String?
-        get() = product.images.firstOrNull()?.src
+        get() = product?.images?.firstOrNull()?.src
 }
 
 data class MongoId(

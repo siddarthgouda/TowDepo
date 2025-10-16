@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -58,7 +59,7 @@ fun WishlistScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -149,7 +150,7 @@ fun WishlistScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         contentPadding = PaddingValues(16.dp)
                     ) {
-                        items(wishlistItems, key = { it.id?.oid ?: it.product.id }) { item ->
+                        items(wishlistItems, key = { it.id?.oid ?: it.product?.id ?: "" }) { item ->
                             WishlistItemCard(
                                 item = item,
                                 onProductClick = onProductClick,
@@ -172,32 +173,33 @@ fun WishlistItemCard(
     onProductClick: (String) -> Unit,
     onRemoveClick: () -> Unit
 ) {
+    // Safe product access
+    val product = item.product
 
     val imageUrl = remember(item) {
         when {
             !item.image.isNullOrEmpty() -> {
-                // Use ImageUtils for the main item image
                 ImageUtils.getSafeProductImageUrl(item.image)
             }
-            item.product.images.isNotEmpty() -> {
-                // Use ImageUtils for product images
-                ImageUtils.getSafeProductImageUrl(item.product.images.first().src)
+            !product?.images.isNullOrEmpty() -> {
+                ImageUtils.getSafeProductImageUrl(product?.images?.first()?.src ?: "")
             }
             else -> null
         }
-    }.also { url ->
-        println("️ DEBUG Wishlist: Image URL for '${item.title}': $url")
-        println(" DEBUG Wishlist: Using environment: ${com.example.towdepo.di.AppConfig.getEnvironmentInfo()}")
     }
 
     Card(
         onClick = {
             println(" DEBUG: Clicked wishlist item: ${item.title}")
-            onProductClick(item.product.id)
+            // Only allow click if product exists and has ID
+            product?.id?.let { productId ->
+                onProductClick(productId)
+            }
         },
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        enabled = product?.id != null // Disable click if no product
     ) {
         Row(
             modifier = Modifier
@@ -205,7 +207,7 @@ fun WishlistItemCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Product Image - Using ImageUtils
+            // Product Image
             if (!imageUrl.isNullOrEmpty()) {
                 AsyncImage(
                     model = imageUrl,
@@ -217,7 +219,6 @@ fun WishlistItemCard(
                     contentScale = ContentScale.Crop
                 )
             } else {
-                //  Use placeholder from ImageUtils
                 AsyncImage(
                     model = ImageUtils.getPlaceholderImageUrl(),
                     contentDescription = "No Image Available",
@@ -253,9 +254,9 @@ fun WishlistItemCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Category
+                // Safe category access
                 Text(
-                    text = "Category: ${item.product.category.name}",
+                    text = "Category: ${product?.category?.name ?: "Uncategorized"}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -301,14 +302,24 @@ fun WishlistItemCard(
                     }
                 }
 
-                // Stock Status
+                // Stock Status - Safe access
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = if (item.product.inStock) " In Stock" else " Out of Stock",
+                    text = if (product?.inStock == true) " In Stock" else " Out of Stock",
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (item.product.inStock) MaterialTheme.colorScheme.primary
+                    color = if (product?.inStock == true) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.error
                 )
+
+                // Show warning if product is null
+                if (product == null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Product information unavailable",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(8.dp))

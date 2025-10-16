@@ -588,7 +588,7 @@ fun ProductActionBar(
     // Track wishlist state
     val wishlistItems by wishlistViewModel.wishlistItems.collectAsState()
     val isInWishlist = remember(wishlistItems, product.id) {
-        wishlistItems.any { it.product.id == product.id }
+        wishlistItems.any { it.product?.id == product.id }
     }
 
     LaunchedEffect(showAddedMessage) {
@@ -638,7 +638,7 @@ fun ProductActionBar(
                         if (isLoggedIn) {
                             if (isInWishlist) {
                                 // Remove from wishlist
-                                val wishlistItem = wishlistItems.find { it.product.id == product.id }
+                                val wishlistItem = wishlistItems.find { it.product?.id == product.id }
                                 wishlistItem?.let {
                                     println("🎯 DEBUG: Removing item: ${it.id}")
                                     wishlistViewModel.removeFromWishlist(it.id?.oid ?: "")
